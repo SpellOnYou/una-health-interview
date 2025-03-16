@@ -2,8 +2,11 @@ from rest_framework import generics, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.dateparse import parse_datetime
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import GlucoseLevel
 from .serializers import GlucoseLevelSerializer
+import csv
+from django.http import HttpResponse
 
 # API view to retrieve a list of glucose levels with filtering, pagination, and sorting capabilities
 class GlucoseLevelListView(generics.ListAPIView):
@@ -61,4 +64,30 @@ class GlucoseLevelDetailView(generics.RetrieveAPIView):
 
         serializer = GlucoseLevelSerializer(glucose_levels, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# API view to allow users to upload new glucose readings via POST request
+class GlucoseLevelCreateView(APIView):
+    """
+    API view to allow users to upload new glucose data via POST request
+    """
+    def post(self, request, *args, **kwargs):
+        # Deserialize incoming JSON payload, support bulk upload
+        serializer = GlucoseLevelSerializer(data=request.data, many=isinstance(request.data, list))
+        if serializer.is_valid():
+            serializer.save()  # Save to the database if data is valid
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Return success response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Return error response
 
+# API view to export glucose data in CSV format
+class GlucoseLevelExportView(APIView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="glucose_levels.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['user_id', 'timestamp', 'value'])  # Write CSV header
+        
+        # Fetch all glucose level data and write to CSV file
+        for record in GlucoseLevel.objects.all():
+            writer.writerow([record.user_id, record.timestamp, record.value])
+        
+        return response  # Return generated CSV file
