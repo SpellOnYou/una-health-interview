@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+from django.utils.timezone import make_aware
 from django.core.management.base import BaseCommand
 from glucose.models import GlucoseLevel
 
@@ -31,13 +32,10 @@ class Command(BaseCommand):
                     })
 
                     # Convert timestamp to a standard format
-                    df['timestamp'] = pd.to_datetime(df['timestamp'], format="%d-%m-%Y %H:%M")
-                    logging.warning(df.head())
+                    df['timestamp'] = pd.to_datetime(df['timestamp'], format="%d-%m-%Y %H:%M").apply(make_aware)
 
                     # Extract user_id from filename (assuming it's stored that way)
                     user_id = os.path.splitext(file)[0]
-
-                    self.stdout.write(user_id)
 
                     # Iterate through each row and save to the database
                     glucose_objects = []
@@ -50,7 +48,6 @@ class Command(BaseCommand):
                                     value=row['glucose_value']
                                 )
                             )
-                    logging.warning(glucose_objects)
 
                     # Bulk insert into database for efficiency
                     GlucoseLevel.objects.bulk_create(glucose_objects)
