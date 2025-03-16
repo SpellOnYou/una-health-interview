@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 
 ### Rational behind design decision
 
@@ -46,7 +46,7 @@ Here I will specify additional points that haven't been tackled on this project,
 - Deployment of service (e.g., through cloud platform) could be implemented further when needed
 - By embracing `rest_framework.decorators.api_view`, we could help the code to be more cleaner and readable by making [the views](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/views.py) more function-based.
 
-## Enviroment setup (How to start the service?)
+# Enviroment setup (How to start the service?)
 
 Assuming it's the initial setup, you can simply run the service by creating schema for initial database setup and building image using the default build context (i.e., `[Dockerfile](https://github.com/SpellOnYou/una-health-interview/blob/main/Dockerfile)`)
 
@@ -60,6 +60,16 @@ You can see the current status of containers via
 
 ```shell
 docker compose ps
+```
+
+and the service is ready to be tested in local when you see the running two containers as following
+
+```
+% docker compose ps
+
+NAME                    IMAGE                 COMMAND                  SERVICE   CREATED          STATUS              PORTS
+una-health-test-db-1    postgres              "docker-entrypoint.s…"   db        18 minutes ago   Up About a minute   0.0.0.0:5432->5432/tcp
+una-health-test-web-1   una-health-test-web   "python manage.py ru…"   web       6 seconds ago    Up 6 seconds        0.0.0.0:8000->8000/tcp
 ```
 
 ## Loading the sample data into the model / database.
