@@ -1,8 +1,6 @@
-# una-health-interview
+## Introduction
 
-# Introduction
-
-## Rational behind design decision
+### Rational behind design decision
 
 The project follows several key architectural and technical decisions that optimize for scalability, maintainability, and developer experience:
 
@@ -45,9 +43,10 @@ Here I will specify additional points that haven't been tackled on this project,
 - [Error handling](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/management/commands/load_data.py#L56) for loading data through `sample-data` could be detailed further based on specified behavior.
 - General security needs to be improved further (e.g., `SECRET_KEY`, database password, allowed hosts, etc).
 - `requirements.txt` can be replaced with pytoml for better dependency management in the future.
+- Deployment of service (e.g., through cloud platform) could be implemented further when needed
 - By embracing `rest_framework.decorators.api_view`, we could help the code to be more cleaner and readable by making [the views](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/views.py) more function-based.
 
-# Enviroment setup (How to start the service?)
+## Enviroment setup (How to start the service?)
 
 Assuming it's the initial setup, you can simply run the service by creating schema for initial database setup and building image using the default build context (i.e., `[Dockerfile](https://github.com/SpellOnYou/una-health-interview/blob/main/Dockerfile)`)
 
@@ -59,7 +58,7 @@ docker compose up
 
 - Note that database password and other security related data (such as `SECRET_KEY`) need to be saved in a more secure way later on.
 
-# Loading the sample data into the model / database.
+## Loading the sample data into the model / database.
 
 Assuming the service is running on docker image, we need to firstly copy the local static data into the container, and then run the command to load data
 
@@ -87,7 +86,7 @@ for record in GlucoseLevel.objects.all()[:5]:
 - Note here that [the first row is skipped](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/management/commands/load_data.py#L26) as it seems to contain the metadata
 - Timezone is set to `UTC` referring to the metadata of `sample-data`, which can be customized further on either of subcommand, database, and service setup
 
-# Check API endpoint
+## Check API endpoint
 
 You can simply access the API via a web browser: http://0.0.0.0:8000/api/v1/ (note template for now is missing and hence [a plain json resopnse](https://github.com/SpellOnYou/una-health-interview/blob/main/config/settings.py#L61) will be rendered) or other preferred API client (e.g., Postman, Curl, etc) can be used as well.
 
@@ -144,7 +143,7 @@ curl -X GET "http://127.0.0.1:8000/api/v1/export/"
 
 ```
 
-# How to do unit-test?
+## How to do unit-test?
 
 Considering to the previous condition that service is running on Docker, one can easily check unit-test via following, which will execute all tests.
 
@@ -155,3 +154,5 @@ docker compose exec web pytest
 Note that further detailed configuration file can be found [here](https://github.com/SpellOnYou/una-health-interview/blob/main/pytest.ini)
 
 Currently three API endpoints, which are (1) retrival (2) posting data (3) exporting data, are being tested in a pretty basic level.
+
+*Exclaimer*: LLM service is mostly being used to enhance documentation of the code.
