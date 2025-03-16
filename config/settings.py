@@ -95,6 +95,9 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'password'),
         'HOST': os.getenv('DATABASE_HOST', 'db'),  # Use service name in Docker Compose
         'PORT': '5432',
+        'TEST': {
+            'NAME': 'test_una_health',  # Test DB name
+        },
     }
 }
 
