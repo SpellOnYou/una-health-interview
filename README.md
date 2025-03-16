@@ -53,17 +53,22 @@ Assuming it's the initial setup, you can simply run the service by creating sche
 ```shell
 docker compose run web python manage.py makemigrations glucose
 docker compose run web python manage.py migrate
-docker compose up
+docker compose up --build
 ```
 
-- Note that database password and other security related data (such as `SECRET_KEY`) need to be saved in a more secure way later on.
+You can see the current status of containers via
+
+```shell
+docker compose ps
+```
 
 ## Loading the sample data into the model / database.
 
 Assuming the service is running on docker image, we need to firstly copy the local static data into the container, and then run the command to load data
 
 ```shell
-docker cp {your_sample_data_dir}/sample-data $(docker compose ps -q web):/app/
+your_sample_data_dir="/path/to/your/data"
+docker cp "$your_sample_data_dir" $(docker compose ps -q web):/app/
 docker compose exec web python manage.py load_data --data-path=/app/sample-data
 ```
 
@@ -83,8 +88,9 @@ print(GlucoseLevel.objects.count())
 for record in GlucoseLevel.objects.all()[:5]:
     print(record.user_id, record.timestamp, record.value)
 ```
+
 - Note here that [the first row is skipped](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/management/commands/load_data.py#L26) as it seems to contain the metadata
-- Timezone is set to `UTC` referring to the metadata of `sample-data`, which can be customized further on either of subcommand, database, and service setup
+- Timezone is [set to `UTC`](https://github.com/SpellOnYou/una-health-interview/blob/main/config/settings.py#L129) and [being rendered](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/management/commands/load_data.py#L35) when loading data referring to the metadata of `sample-data`, which can be customized further on either of subcommand, database, and service setup.
 
 ## Check API endpoint
 
@@ -94,12 +100,14 @@ Following can be checked to test the API after running the service and database.
 
 ### Data retrival
 
+Note that [the default pagination is set to 10](https://github.com/SpellOnYou/una-health-interview/blob/main/config/settings.py#L64) which can be adjustable via `limit` param (see following example).
+
 ```bash
 # Get All Glucose Levels for a User
 curl -X GET "http://127.0.0.1:8000/api/v1/levels/?user_id=cccccccc-cccc-cccc-cccc-cccccccccccc"
 
 # Filter by Start and Stop Timestamps
-curl -X GET "http://127.0.0.1:8000/api/v1/levels/?user_id=cccccccc-cccc-cccc-cccc-cccccccccccc&start=2025-03-16T00:00:00Z&stop=2025-03-16T23:59:59Z"
+curl -X GET "http://127.0.0.1:8000/api/v1/levels/?user_id=cccccccc-cccc-cccc-cccc-cccccccccccc&start=2021-02-16T00:00:00Z&stop=2021-03-16T23:59:59Z"
 
 # Sort by Timestamp (Descending)
 curl -X GET "http://127.0.0.1:8000/api/v1/levels/?user_id=cccccccc-cccc-cccc-cccc-cccccccccccc&ordering=-timestamp"
@@ -151,8 +159,8 @@ Considering to the previous condition that service is running on Docker, one can
 docker compose exec web pytest
 ```
 
-Note that further detailed configuration file can be found [here](https://github.com/SpellOnYou/una-health-interview/blob/main/pytest.ini)
+One can find further detailed configuration file can be found [here](https://github.com/SpellOnYou/una-health-interview/blob/main/pytest.ini).
 
-Currently three API endpoints, which are (1) retrival (2) posting data (3) exporting data, are being tested in a pretty basic level.
+Currently three API endpoints, which are (1) retrival (2) posting data (3) exporting data, are being tested in [a pretty basic level](https://github.com/SpellOnYou/una-health-interview/blob/main/glucose/tests.py) which can be improved further in future. Also, we can consider uploading testing results to the artifacts and embrace it to CI/CD pipeline for better reporting and visualization.
 
 *Exclaimer*: LLM service is mostly being used to enhance documentation of the code.
